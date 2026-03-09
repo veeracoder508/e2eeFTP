@@ -27,15 +27,22 @@ The security of the connection is established through a handshake process before
 
 ```
 e2eeFTP/
-├── client.py               # Main executable to run the client
-├── server.py               # Main executable to run the server
-├── README.md               # This file
-└── e2eeFTP/                # The core Python package
+├── client.py               
+├── server.py               
+├── README.md   
+├── LICENSE           
+└── e2eeFTP/                
     ├── __init__.py
-    ├── client/             # Contains the Client class logic
-    │   └── client.py
-    └── server/             # Contains the Server class logic
-        └── server.py
+    ├── client/            
+    │   ├── client.py
+    │   └── __init__.py
+    ├── server/             
+    │   ├── server.py
+    │   └── __init__.py
+    └── auth/
+        ├── __init__.py
+        └── e2ee.py
+
 ```
 
 ## Setup and Installation
@@ -43,6 +50,7 @@ e2eeFTP/
 ### 1. Prerequisites
 
 -   Python 3.7+
+-   uv (file manager)
 
 ### 2. Clone the Repository
 
