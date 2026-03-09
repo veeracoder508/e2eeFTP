@@ -47,8 +47,7 @@ e2eeFTP/
 ### 2. Clone the Repository
 
 ```sh
-git clone <your-repository-url>
-cd e2eeFTP
+uh install e2eeftp
 ```
 
 ### 3. Install Dependencies
@@ -79,4 +78,4 @@ pip install -r requirements.txt
     ```sh
     python client.py
     ```
-    The example client will automatically connect to the server, send `README.md`, and then attempt to download a file named `main.py`. Since `main.py` does not exist in the root directory, the server will correctly respond with a "File not found" error, which will be displayed on the client side.
+    The example client will automatically connect to the server, send `README.md`, and then attempt to download a file named `main.py`. Since `main.py` does not exist in the root directory, the server will correctly respond with a "File not found" error, which will be displayed on the client side.these transferred files are for example.
