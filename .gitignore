@@ -1,0 +1,5 @@
+# virtual environment folder
+/.venv
+
+# log files
+*.log
