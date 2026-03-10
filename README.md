@@ -23,7 +23,6 @@ Think of end-to-end encryption as being like a letter that goes through the mail
 ## What is FTP protocol?
 File transfer protocol (FTP) is an Internet tool provided by TCP/IP. It helps to transfer files from one computer to another by providing access to directories or folders on remote computers and allows software, data and text files to be transferred between different kinds of computers. <!-- source https://www.geeksforgeeks.org/computer-science-fundamentals/file-transfer-protocol-ftp/ -->
 
-<<<<<<< HEAD
 # requirements
 Brfore we start we need to install these
 - python 3.14+
@@ -40,27 +39,7 @@ server = e2eeftp()
 
 if __name__ == "__main__":
     server.run()
-=======
-```
-e2eeFTP/
-├── client.py               
-├── server.py               
-├── README.md   
-├── LICENSE           
-└── e2eeFTP/                
-    ├── __init__.py
-    ├── client/            
-    │   ├── client.py
-    │   └── __init__.py
-    ├── server/             
-    │   ├── server.py
-    │   └── __init__.py
-    └── auth/
-        ├── __init__.py
-        └── e2ee.py
 
->>>>>>> cc823946a67d359394b63f19f4dc0f38ee213c65
-```
 
 For the client this is the simple setup.
 ```python
@@ -69,50 +48,9 @@ from e2eeFTP import e2eeftpClient
 
 client = e2eeftpClient()
 
-<<<<<<< HEAD
 if __name__ == "__main__":
     client.send("mini-veera.jpg")  # Testing send request
     client.get('mini-veera.jpg')   # Testing get request
     client.list()                  # Testing list request
 ```
 You can send any file - image(png, jpeg), text(py, txt, c), executable, commpressed file(zip, rar, tar, gz) and more.
-=======
--   Python 3.7+
--   uv (file manager)
-
-### 2. Clone the Repository
-
-```sh
-uh install e2eeftp
-```
-
-### 3. Install Dependencies
-
-The project requires the `cryptography` and `rich` libraries. You can install them using pip. It's recommended to create a `requirements.txt` file:
-
-**requirements.txt**
-```
-cryptography
-rich
-```
-
-Then install them with:
-```sh
-pip install -r requirements.txt
-```
-
-## Usage
-
-1.  **Start the Server**
-    Open a terminal and run the server script. It will bind to `127.0.0.1:5001` and wait for incoming connections.
-    ```sh
-    python server.py
-    ```
-
-2.  **Run the Client**
-    Open a second terminal and run the client script.
-    ```sh
-    python client.py
-    ```
-    The example client will automatically connect to the server, send `README.md`, and then attempt to download a file named `main.py`. Since `main.py` does not exist in the root directory, the server will correctly respond with a "File not found" error, which will be displayed on the client side.these transferred files are for example.
->>>>>>> cc823946a67d359394b63f19f4dc0f38ee213c65
