@@ -1,3 +1,9 @@
+# Project test data file
+received/
+list.txt
+downloaded_*.*
+test_*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

@@ -1,10 +1,23 @@
 [project]
 name = "e2eeftp"
-version = "0.1.0"
-description = "Add your description here"
+version = "0.0.0b2"
+authors = [
+  { name="R A Veeraragavan", email="veeracoder123@gmail.com" },
+]
+description = "A simple command-line prototype for secure file transfers over TCP using Python. It ensures that files are encrypted from the client to the server, with no one in the middle being able to decipher the content."
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "cryptography>=46.0.5",
     "rich>=14.3.3",
 ]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+
+[project.urls]
+Homepage = "https://github.com/veeracoder508/e2eeftp"
+Issues = "https://github.com/veeracoder508/e2eeftp/issues"

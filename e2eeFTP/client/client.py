@@ -1,14 +1,9 @@
 import socket
 import os
-import base64
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.fernet import Fernet
 import logging
-from logging import Formatter
 from rich.logging import RichHandler
-
+from ..auth import E2EE
 
 rh = RichHandler()
 # Configure logging with Rich
@@ -21,7 +16,7 @@ logging.basicConfig(
 
 log = logging.getLogger("rich")
 
-class Client:
+class e2eeftpClient:
     """
     A client for secure, end-to-end encrypted file transfers.
 
@@ -30,100 +25,83 @@ class Client:
     It can be used to send (upload) and get (download) files from a compatible
     server.
     """
-    def __init__(self, host='127.0.0.1', port=5001):
+    def __init__(self, host='127.0.0.1', port=5001, logging: bool = True) -> None:
         """
         Initializes the client with server connection details.
 
         Args:
             host (str): The IP address or hostname of the server. Defaults to '127.0.0.1'.
             port (int): The port number the server is listening on. Defaults to 5001.
+            logging (bool): Whether to enable logging. Defaults to True.
         """
         self.host = host
         self.port = port
-        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.logging = logging
 
-    def _connect(self):
-        """Creates and connects a new TCP socket to the server.
+        log.disabled = not self.logging
 
-        Raises:
-            ConnectionRefusedError: If the server is not reachable.
+    def _recv_until(self, sock, delimiter: bytes) -> bytes:
         """
-        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.client_socket.connect((self.host, self.port))
+        Receives data from the socket until a delimiter is found.
 
-    def _perform_handshake(self):
-        """Executes an ECDH Key Exchange to derive a session-specific symmetric key.
-
-        This method performs the client-side handshake:
-        1. Generates an ephemeral SECP256R1 private/public key pair.
-        2. Sends its public key to the server.
-        3. Receives the server's public key.
-        4. Computes a shared secret and derives a 32-byte key using HKDF.
+        Args:
+            socket (socket.socket): The socket to receive data from.
+            delimiter (bytes): The sequence of bytes to look for.
 
         Returns:
-            Fernet: A symmetric cipher object for encrypting/decrypting data
-                for the current session.
+            bytes: The received data until the delimiter is found.
         """
-        logging.info("Starting secure handshake...")
-        
-        client_private_key = ec.generate_private_key(ec.SECP256R1())
-        client_public_bytes = client_private_key.public_key().public_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PublicFormat.SubjectPublicKeyInfo
-        )
+        data = b''
+        while not data.endswith(delimiter):
+            chunk = sock.recv(1)
+            if not chunk: break
+            data += chunk
+        return data
 
-        # 2. Send Client's public key to Server
-        self.client_socket.sendall(client_public_bytes)
-
-        # 3. Receive Server's public key
-        server_public_bytes = self.client_socket.recv(1024)
-        server_public_key = serialization.load_pem_public_key(server_public_bytes)
-
-        shared_secret = client_private_key.exchange(ec.ECDH(), server_public_key)
-
-        derived_key = HKDF(
-            algorithm=hashes.SHA256(),
-            length=32,
-            salt=None,
-            info=b'file-transfer-e2ee',
-        ).derive(shared_secret)
-        fernet_key = base64.urlsafe_b64encode(derived_key)
-        return Fernet(fernet_key)
-
-    def send(self, filepath):
-        """Encrypts and sends a file to the connected server.
+    def send(self, filepath: str) -> int:
+        """
+        Encrypts and sends a file to the connected server.
 
         A new connection and handshake are performed for each file transfer.
         The protocol for sending is: "SEND|<filename>|<filesize>".
 
         Args:
             filepath (str): The local path to the file to be sent.
+
+        Returns:
+            The status code of the response from the server.
         """
         if not os.path.exists(filepath):
-            print(f"[-] File {filepath} not found.")
+            log.error(f"File not found: {filepath}")
             return
-
-        filename = os.path.basename(filepath)
+        
+        log.info(f"Attempting to send {os.path.basename(filepath)}...")
         try:
-            self._connect() 
-            cipher = self._perform_handshake()
-            
-            with open(filepath, "rb") as f:
-                encrypted_data = cipher.encrypt(f.read())
-            
-            # Protocol: ACTION|FILENAME|SIZE
-            header = f"SEND|{filename}|{len(encrypted_data)}"
-            self.client_socket.send(header.encode())
-            
-            import time; time.sleep(0.1) 
-            self.client_socket.sendall(encrypted_data)
-            logging.info(f"Encrypted file '{filename}' sent.")
-        except Exception as e:
-            logging.error(f"Send error: {e}")
-        finally:
-            self.client_socket.close()
+            with socket.create_connection((self.host, self.port)) as sock:
+                log.info("Starting secure handshake...")
+                cipher = E2EE().client_handshake(sock)
+                log.info("Secure handshake complete.")
+                
+                with open(filepath, "rb") as f:
+                    data = f.read()
+                
+                encrypted_data = cipher.encrypt(data)
+                
+                header = f"SEND|{os.path.basename(filepath)}|{len(encrypted_data)}\n"
+                sock.sendall(header.encode())
+                sock.sendall(encrypted_data)
 
-    def get(self, filename):
+                response = self._recv_until(sock, b'\n').decode().strip()
+                log.info(f"Server response: {response}")
+
+                code = header.split("|")[0]
+        except ConnectionRefusedError:
+            log.error(f"Connection to {self.host}:{self.port} refused. Is the server running?")
+        except Exception as e:
+            log.error(f"An error occurred during send: {e}", extra={"markup": True})
+        return int(code)
+
+    def get(self, filename: str) -> int:
         """Requests, receives, and decrypts a file from the server.
 
         A new connection and handshake are performed for each file transfer.
@@ -131,48 +109,153 @@ class Client:
 
         Args:
             filename (str): The name of the file to request from the server.
+
+        Returns:
+            the status code of the response from the server.
         """
+        log.info(f"Attempting to get {filename}...")
         try:
-            self._connect()
-            cipher = self._perform_handshake()
-            
-            # 1. Send GET request
-            self.client_socket.send(f"GET|{filename}".encode())
+            with socket.create_connection((self.host, self.port)) as sock:
+                log.info("Starting secure handshake...")
+                cipher = E2EE().client_handshake(sock)
+                log.info("Secure handshake complete.")
+                sock.sendall(f"GET|{filename}\n".encode())
 
-            # 2. Receive Header (status|filesize)
-            header = self.client_socket.recv(1024).decode()
-            if header.startswith("ERROR"):
-                logging.error(f"Fetching {filename}...")
-                return
+                header = self._recv_until(sock, b'\n').decode().strip()
+                if not header:
+                    log.error("Connection closed by server without a response.")
+                    return
 
-            _, filesize = header.split("|")
-            filesize = int(filesize)
-
-            # 3. Receive Encrypted Data
-            encrypted_buffer = b""
-            while len(encrypted_buffer) < filesize:
-                chunk = self.client_socket.recv(4096)
-                if not chunk: break
-                encrypted_buffer += chunk
-
-            # 4. Decrypt and Save
-            decrypted_data = cipher.decrypt(encrypted_buffer)
-            with open(f"downloaded_{filename}", "wb") as f:
-                f.write(decrypted_data)
-            
-            logging.info(f"Success: {filename} downloaded.")
-
+                try:
+                    code, val = header.split("|", 1)
+                except ValueError:
+                    log.error(f"Received malformed header from server: {header}")
+                    return
+                
+                if code == "200":
+                    filesize = int(val)
+                    log.info(f"Receiving {filename} ({filesize} bytes)...")
+                    buf = b""
+                    while len(buf) < filesize:
+                        chunk = sock.recv(min(filesize - len(buf), 4096))
+                        if not chunk: 
+                            log.error("Connection lost during file download.")
+                            break
+                        buf += chunk
+                    
+                    if len(buf) == filesize:
+                        try:
+                            decrypted_data = cipher.decrypt(buf)
+                            with open(f"downloaded_{filename}", "wb") as f:
+                                f.write(decrypted_data)
+                            log.info(f"Successfully downloaded and saved to downloaded_{filename}")
+                        except Exception as e:
+                            log.error(f"Failed to decrypt file: {e}")
+                    else:
+                        log.error("File download was incomplete.")
+                else:
+                    log.error(f"Server error: {val}")
+        except ConnectionRefusedError:
+            log.error(f"Connection to {self.host}:{self.port} refused. Is the server running?")
         except Exception as e:
-            logging.error(f"{e}")
-        finally:
-            self.client_socket.close()
+            log.error(f"An error occurred during get: {e}", extra={"markup": True})
+        return int(code)
 
-if __name__ == "__main__":
-    # Example usage
-    # First, create a dummy file if it doesn't exist
-    if not os.path.exists("test.txt"):
-        with open("test.txt", "w") as f:
-            f.write("This is a highly confidential message.")
+    def list(self) -> int:
+        """
+        Requests and prints a list of available files from the server.
 
-    client = Client()
-    client.send("test.txt")
+        Returns:
+            The status code of the response from the server.
+        """
+        log.info("Requesting file list from server...")
+        try:
+            with socket.create_connection((self.host, self.port)) as sock:
+                log.info("Starting secure handshake...")
+                # A handshake is performed for every new connection as per the protocol
+                E2EE().client_handshake(sock)
+                log.info("Secure handshake complete.")
+
+                sock.sendall(b"LIST\n")
+
+                header = self._recv_until(sock, b'\n').decode().strip()
+                if not header:
+                    log.error("Connection closed by server without a response.")
+                    return
+
+                try:
+                    code, val = header.split("|", 1)
+                except ValueError:
+                    log.error(f"Received malformed header from server: {header}")
+                    return
+
+                if code == "200":
+                    list_size = int(val)
+                    if list_size == 0:
+                        log.info("Server has no files in the 'received' directory.")
+                        return
+
+                    log.info(f"Receiving file list ({list_size} bytes)...")
+                    buf = b""
+                    while len(buf) < list_size:
+                        chunk = sock.recv(min(list_size - len(buf), 4096))
+                        if not chunk:
+                            log.error("Connection lost while receiving file list.")
+                            break
+                        buf += chunk
+
+                    if len(buf) == list_size:
+                        file_list_str = buf.decode()
+                        with open('list.txt', 'w') as f: 
+                            f.write("")
+                        for filename in file_list_str.split('\n'):
+                            with open('list.txt', 'a') as f:
+                                f.write(f"{filename}\n")
+                    else:
+                        log.error("File list reception was incomplete.")
+                else:
+                    log.error(f"Server error: {val}")
+        except ConnectionRefusedError:
+            log.error(f"Connection to {self.host}:{self.port} refused. Is the server running?")
+        except Exception as e:
+            log.error(f"An error occurred during list request: {e}", extra={"markup": True})
+        return int(code)
+
+    def delete(self, filename: str) -> int:
+        """
+        Requests the server to delete a file.
+
+        Args:
+            filename (str): The name of the file to delete.
+
+        Returns:
+            The status code of the response from the server.
+        """
+        log.info(f"Attempting to delete {filename}...")
+        try:
+            with socket.create_connection((self.host, self.port)) as sock:
+                log.info("Starting secure handshake...")
+                # A handshake is performed for every new connection as per the protocol
+                E2EE().client_handshake(sock)
+                log.info("Secure handshake complete.")
+
+                sock.sendall(f"DELETE|{filename}\n".encode())
+
+                response = self._recv_until(sock, b'\n').decode().strip()
+                if not response:
+                    log.error("Connection closed by server without a response.")
+                    return
+
+                try:
+                    code, val = response.split("|", 1)
+                    if code == "200":
+                        log.info(f"Server response: {val}")
+                    else:
+                        log.error(f"Server error: {val}")
+                except ValueError:
+                    log.error(f"Received malformed response from server: {response}")
+        except ConnectionRefusedError:
+            log.error(f"Connection to {self.host}:{self.port} refused. Is the server running?")
+        except Exception as e:
+            log.error(f"An error occurred during delete: {e}", extra={"markup": True})
+        return int(code)
