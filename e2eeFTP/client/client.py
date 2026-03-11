@@ -40,7 +40,7 @@ class e2eeftpClient:
 
         log.disabled = not self.logging
 
-    def _recv_until(self, sock, delimiter: bytes) -> bytes:
+    def _recv_until(self, sock: socket.socket, delimiter: bytes) -> bytes:
         """
         Receives data from the socket until a delimiter is found.
 
@@ -71,7 +71,7 @@ class e2eeftpClient:
         Returns:
             The status code of the response from the server.
         """
-        if not os.path.exists(filepath):
+        if not os.path.exists(filepath): 
             log.error(f"File not found: {filepath}")
             return
         

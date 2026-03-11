@@ -9,10 +9,18 @@ import platform
 import os
 import socket
 
-def check_host_status(host, port=None):
+
+def check_host_status(host: str = '127.0.0.1', port: None | int = None) -> bool:
     """
     Checks if a host is up. If a port is provided, it attempts a 
     TCP connection. Otherwise, it defaults to a standard ping.
+
+    Args:
+        host (str): the host ip.
+        port (None | int): the port of the host.
+
+    Returns:
+        bool if the server is up or not.
     """
     if port:
         try:
@@ -32,10 +40,14 @@ def check_host_status(host, port=None):
             return False
 
 class e2eeftpClientCli:
+    """
+    The CLI for the e2eeftp client for a user frendly TUI experience.
+    """
     def __init__(self):
         # Initialize client - ensure host is accessible via self.client.host
         self.client = e2eeftpClient(logging=False)
         self.console = Console()
+
         self.status_map = {
             "200": "[bold green]200: Success[/bold green]",
             "226": "[bold cyan]226: Transfer Complete[/bold cyan]",
@@ -46,7 +58,9 @@ class e2eeftpClientCli:
         self._create_help_table()
 
     def _create_help_table(self):
-        """Creates the persistent help table."""
+        """
+        Creates the persistent help table.
+        """
         self.help_table = Table(title="Available Commands", header_style="bold magenta")
         self.help_table.add_column("Command", style="cyan", width=15)
         self.help_table.add_column("Description")
