@@ -3,6 +3,9 @@ received/
 list.txt
 downloaded_*.*
 test_*
+client_id.key
+known_server.pub
+server_id.key
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -46,9 +46,9 @@ class e2eeftpClientCli:
     """
     The CLI for the e2eeftp client for a user frendly TUI experience.
     """
-    def __init__(self):
+    def __init__(self, host: str='127.0.0.1', port: int=5001):
         # Initialize client - ensure host is accessible via self.client.host
-        self.client = e2eeftpClient(logging=False)
+        self.client = e2eeftpClient(host=host, port=port, logging=False)
         self.console = Console()
 
         self.status_map = {
@@ -129,28 +129,33 @@ class e2eeftpClientCli:
                     rprint("[red]Error: Provide a file path.[/red]")
             
             case "LIST":
-                self.client.list()
-                if os.path.exists("list.txt"):
-                    with open("list.txt", 'r') as file:
-                        lines = [line.strip() for line in file if line.strip()]
-                    
-                    if not lines:
+                rprint("[blue]Action:[/blue] Requesting file list...")
+                file_list = self.client.list()
+
+                if file_list is not None:
+                    # Handle empty list or list with a single empty string from split
+                    if not file_list or (len(file_list) == 1 and not file_list[0]):
                         rprint("[yellow]Server directory is empty.[/yellow]")
                         return
 
                     table = Table(title="Server Directory", header_style="bold magenta")
                     table.add_column("Filename", style="white")
-                    table.add_column("Status", justify="center")
-
-                    for line in lines:
-                        table.add_row(line, self._get_status_style(200))
+                    
+                    i = 0
+                    for filename in file_list:
+                        if filename: # Don't add empty rows
+                            table.add_row(filename)
+                            i += 1
                     
                     self.console.print(table)
+                    rprint("[i][blue]check:[/blue] list.txt[/i]")
+                    rprint(f"[i][blue]Total files:[/blue] {i}[/i]")
                 else:
-                    rprint("[bold red]Error:[/bold red] Could not retrieve directory list.")
+                    rprint("[bold red]Error:[/bold red] Could not retrieve directory list. Check logs for details.")
             
             case "DELETE":
                 if args:
+                    rprint(f"[blue]Action:[/blue] Deleteing {args}...")
                     status = self.client.delete(args)
                     rprint(f"Status: {self._get_status_style(status or 200)}")
                 else:

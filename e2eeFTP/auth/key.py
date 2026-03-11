@@ -2,6 +2,7 @@ from cryptography.hazmat.primitives.asymmetric import ed25519
 from cryptography.hazmat.primitives import serialization
 import base64
 import os
+from rich import print
 
 def generate_keys():
     """Generates and saves key pairs for server and client."""
@@ -18,7 +19,7 @@ def generate_keys():
             format=serialization.PrivateFormat.PKCS8,
             encryption_algorithm=serialization.NoEncryption()
         ))
-    print("Saved 'server_id.key' (private). Place this in your server's root directory.")
+    print("Saved 'server_id.key' [blue](private)[/blue]. Place this in your server's root directory.")
 
     # Save server public key in PEM format (for client's known_server.pub)
     with open("known_server.pub", "wb") as f:
@@ -26,7 +27,7 @@ def generate_keys():
             encoding=serialization.Encoding.PEM,
             format=serialization.PublicFormat.SubjectPublicKeyInfo
         ))
-    print("Saved 'known_server.pub' (public). Copy this to your client's directory.")
+    print("Saved 'known_server.pub' [blue](public)[/blue]. Copy this to your client's directory.")
 
     # --- Generate Client Keys ---
     print("\n--- Generating Client Keys ---")
@@ -40,7 +41,7 @@ def generate_keys():
             format=serialization.PrivateFormat.PKCS8,
             encryption_algorithm=serialization.NoEncryption()
         ))
-    print("Saved 'client_id.key' (private). Place this in your client's directory.")
+    print("Saved 'client_id.key' [blue](private)[/blue]. Place this in your client's directory.")
 
     # Get client public key in raw format, then base64 encode it for authorized_clients.pub
     client_pub_key_raw_b64 = base64.b64encode(client_pub_key.public_bytes(
@@ -55,7 +56,5 @@ def generate_keys():
     print("\n--- Authorization ---")
     print("The client's public key has been added to 'authorized_clients.pub'.")
     print("Place this file in your server's root directory.")
-    print(f"Key added: {client_pub_key_raw_b64.decode()}")
-
-if __name__ == "__main__":
-    generate_keys()
+    print(f"Key added: [yellow]{client_pub_key_raw_b64.decode()}[/yellow]")
+    print("------------------------")

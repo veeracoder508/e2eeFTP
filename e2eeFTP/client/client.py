@@ -175,7 +175,7 @@ class e2eeftpClient:
                     return 400
                 
                 code = int(code)
-                if code == "200":
+                if code == 200:
                     filesize = int(val)
                     log.info(f"Receiving {filename} ({filesize} bytes)...")
                     buf = b""
@@ -202,15 +202,15 @@ class e2eeftpClient:
             log.error(f"An error occurred during get operation: {e}")
         return code
 
-    def list(self) -> int:
+    def list(self) -> list[str] | None:
         """
         Requests and prints a list of available files from the server.
 
         Returns:
-            The status code of the response from the server.
+            A list of filenames on success, None on failure.
         """
         log.info("Requesting file list from server...")
-        code = 500
+
         try:
             with self._secure_channel() as (sock, cipher):
                 if not sock or not cipher:
@@ -221,20 +221,20 @@ class e2eeftpClient:
                 header = self._recv_until(sock, b'\n').decode().strip()
                 if not header:
                     log.error("Connection closed by server without a response.")
-                    return 500
+                    return None
 
                 try:
                     code, val = header.split("|", 1)
                 except ValueError:
                     log.error(f"Received malformed header: {header}")
-                    return 400
+                    return None
 
                 code = int(code)
-                if code == "200":
+                if code == 200:
                     list_size = int(val)
                     if list_size == 0:
                         log.info("Server has no files available.")
-                        return 200
+                        return []
 
                     log.info(f"Receiving file list ({list_size} bytes)...")
                     buf = b""
@@ -247,18 +247,16 @@ class e2eeftpClient:
 
                     if len(buf) == list_size:
                         file_list_str = buf.decode()
-                        with open('list.txt', 'w') as f: 
-                            f.write("")
-                        for filename in file_list_str.split('\n'):
-                            with open('list.txt', 'a') as f:
-                                f.write(f"{filename}\n")
+                        return file_list_str.split('\n')
                     else:
                         log.error("File list reception was incomplete.")
+                        return None
                 else:
                     log.error(f"Server error: {val}")
+                    return None
         except Exception as e:
             log.error(f"An error occurred during list operation: {e}")
-        return code
+        return None
 
     def delete(self, filename: str) -> int:
         """
@@ -285,14 +283,15 @@ class e2eeftpClient:
                     return 500
 
                 try:
-                    code, val = response.split("|", 1)
-                    if code == "200":
+                    code_str, val = response.split("|", 1)
+                    code = int(code_str)
+                    if code == 200:
                         log.info(f"Server: {val}")
                     else:
                         log.error(f"Server error: {val}")
-                    code = int(code)
                 except ValueError:
                     log.error(f"Received malformed response: {response}")
+                    return 400
         except Exception as e:
             log.error(f"An error occurred during delete operation: {e}")
         return code
