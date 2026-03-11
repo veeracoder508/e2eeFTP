@@ -5,7 +5,7 @@ It instantiates and starts the Server from the pyproto package, which listens
 for incoming client connections.
 """
 from e2eeFTP.server.server import E2EEFTPRequestHandler, e2eeftp
-from cryptography.fernet import Fernet
+from e2eeFTP.auth.e2ee import AESCipher
 import os
 import logging
 import socketserver
@@ -80,7 +80,7 @@ class CustomE2EERequestHandler(E2EEFTPRequestHandler):
             log.error(f"Error getting stats for file {filename}: {e}")
             self.request.sendall(b"500|Could not retrieve file stats\n")
 
-    def _handle_request(self, cipher: Fernet) -> None:
+    def _handle_request(self, cipher: AESCipher) -> None:
         """
         Overrides the base request handler to include RENAME and STAT commands.
         """

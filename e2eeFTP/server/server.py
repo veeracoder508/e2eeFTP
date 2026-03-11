@@ -1,9 +1,10 @@
 import socketserver
 import logging
 import os
-from cryptography.fernet import Fernet
-from ..auth import E2EE
-
+import base64
+from ..auth import E2EE, AESCipher
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import ed25519
 
 # Configure logging to output to both console and file
 log = logging.getLogger(__name__)
@@ -58,13 +59,44 @@ class E2EEFTPRequestHandler(socketserver.BaseRequestHandler):
         address = self.client_address
         log.info(f"Accepted connection from {address}")
         try:
+            server_key_path = "server_id.key"
+            auth_keys_path = "authorized_clients.pub"
+
+            log.info("Loading server identity and authorized keys...")
+            
+            if not os.path.exists(server_key_path):
+                log.error(f"Server identity key '{server_key_path}' not found. Cannot secure connection.")
+                return
+
+            with open(server_key_path, "rb") as f:
+                server_id_priv_key = serialization.load_pem_private_key(f.read(), password=None)
+            
+            authorized_client_keys = []
+            if os.path.exists(auth_keys_path):
+                with open(auth_keys_path, "r") as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and not line.startswith('#'):
+                            try:
+                                key_bytes = base64.b64decode(line)
+                                authorized_client_keys.append(ed25519.Ed25519PublicKey.from_public_bytes(key_bytes))
+                            except Exception as e:
+                                log.warning(f"Skipping invalid key in {auth_keys_path}: {e}")
+            else:
+                log.warning(f"'{auth_keys_path}' not found. No clients will be authorized.")
+                log.warning("Run 'generate_keys.py' to create client keys and the authorization file.")
+
             e2ee = E2EE()
             log.info(f"Performing secure handshake with {address}...")
-            cipher = e2ee.server_handshake(self.request) # self.request is the client socket
+            cipher = e2ee.server_handshake(self.request, server_id_priv_key, authorized_client_keys)
             log.info(f"Secure handshake with {address} complete.")
             self._handle_request(cipher)
+        except FileNotFoundError as e:
+            log.error(f"Identity key file not found: {e}. Please generate keys and authorize clients.")
+        except ConnectionError as e:
+            log.error(f"Handshake failed with {address}: {e}")
         except Exception as e:
-            log.error(f"Error during session with {address}: {e}", extra={"markup": True})
+            log.error(f"Error during session with {address}: {e}")
         finally:
             log.info(f"Connection with {address} closed.")
 
@@ -91,7 +123,7 @@ class E2EEFTPRequestHandler(socketserver.BaseRequestHandler):
             data += chunk
         return data
 
-    def _handle_request(self, cipher: Fernet) -> None:
+    def _handle_request(self, cipher: AESCipher) -> None:
         """
         Parses the client's command and dispatches to the correct handler.
 
@@ -103,7 +135,7 @@ class E2EEFTPRequestHandler(socketserver.BaseRequestHandler):
         - DELETE: DELETE|filename
 
         Args:
-            cipher (Fernet): The active Fernet cipher instance for this session,
+            cipher (AESCipher): The active cipher instance for this session,
                      used for encrypting/decrypting file data.
         """
         header_data = self._recv_until(b'\n')
@@ -167,7 +199,7 @@ class E2EEFTPRequestHandler(socketserver.BaseRequestHandler):
         else:
             self.request.sendall(b"404|File not found\n")
 
-    def _receive_file(self, filename: str, filesize: int, cipher: Fernet) -> None:
+    def _receive_file(self, filename: str, filesize: int, cipher: AESCipher) -> None:
         """
         Receives, decrypts, and saves a file sent by the client.
 
@@ -178,7 +210,7 @@ class E2EEFTPRequestHandler(socketserver.BaseRequestHandler):
         Args:
             filename (str): The name to save the file as.
             filesize (int): The exact size of the incoming encrypted data buffer.
-            cipher (Fernet): The Fernet cipher instance for this session.
+            cipher (AESCipher): The cipher instance for this session.
 
         **Responses**:
         - On success: `b"226|Transfer Complete\\n"`
@@ -209,7 +241,7 @@ class E2EEFTPRequestHandler(socketserver.BaseRequestHandler):
             log.error(f"Decryption failed for {filename}: {e}")
             self.request.sendall(b"500|Decryption Failed\n")
 
-    def _send_file(self, filename: str, cipher: Fernet) -> None:
+    def _send_file(self, filename: str, cipher: AESCipher) -> None:
         """
         Encrypts and sends a requested file to the client.
 
@@ -218,7 +250,7 @@ class E2EEFTPRequestHandler(socketserver.BaseRequestHandler):
 
         Args:
             filename (str): The name of the file to send.
-            cipher (Fernet): The Fernet cipher instance for this session.
+            cipher (AESCipher): The cipher instance for this session.
 
         **Protocol & Responses**:
         - If file found:
@@ -295,6 +327,33 @@ class e2eeftp(socketserver.ThreadingTCPServer):
         super().__init__((host, port), E2EEFTPRequestHandler)
         self.host, self.port = host, port
 
+    def _generate_server_keys_if_missing(self) -> None:
+        """Generates and saves server key pair if it doesn't exist."""
+        server_key_path = "server_id.key"
+        if not os.path.exists(server_key_path):
+            log.warning(f"Server identity key '{server_key_path}' not found. Generating a new one.")
+
+            server_priv_key = ed25519.Ed25519PrivateKey.generate()
+            server_pub_key = server_priv_key.public_key()
+
+            # Save server private key in PEM format
+            with open(server_key_path, "wb") as f:
+                f.write(server_priv_key.private_bytes(
+                    encoding=serialization.Encoding.PEM,
+                    format=serialization.PrivateFormat.PKCS8,
+                    encryption_algorithm=serialization.NoEncryption()
+                ))
+            log.info(f"Saved '{server_key_path}' (private). This is your server's permanent identity.")
+
+            # Save server public key in PEM format (for client's known_server.pub)
+            with open("known_server.pub", "wb") as f:
+                f.write(server_pub_key.public_bytes(
+                    encoding=serialization.Encoding.PEM,
+                    format=serialization.PublicFormat.SubjectPublicKeyInfo
+                ))
+            log.info("Saved 'known_server.pub' (public). Copy this file to your client's directory.")
+            log.warning("You must still generate client keys and add their public keys to 'authorized_clients.pub' for them to connect.")
+
     def run(self) -> None:
         """
         Starts the server's main loop to listen for and handle connections.
@@ -303,6 +362,7 @@ class e2eeftp(socketserver.ThreadingTCPServer):
         connections. Each connection is then passed to an instance of
         `E2EEFTPRequestHandler` for processing in a new thread.
         """
+        self._generate_server_keys_if_missing()
         log.info(f"host: {self.host}, port: {self.port}")
         log.info("press ctrl+c to exit")
         log.info(f"Server listening on {self.host}:{self.port}")

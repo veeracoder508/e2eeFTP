@@ -59,3 +59,7 @@ You can send any file - image(png, jpeg), text(py, txt, c), executable, commpres
 
 you can also cutomize the server to add or upgrage any methods. check `custom_server.py` for an example.
 
+
+sources:
+- [cloudflare](https://www.cloudflare.com/en-in/learning/privacy/what-is-end-to-end-encryption/)
+- [geeksforgeeks](https://www.geeksforgeeks.org/computer-science-fundamentals/file-transfer-protocol-ftp/)

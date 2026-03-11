@@ -1,7 +1,7 @@
 from .client import e2eeftpClient
 from rich.console import Console
 from rich.panel import Panel
-from rich.prompt import Prompt
+from rich.prompt import Prompt as PPrompt
 from rich.table import Table
 from rich import print as rprint
 import subprocess
@@ -9,6 +9,9 @@ import platform
 import os
 import socket
 
+
+class Prompt(PPrompt):
+    prompt_suffix = ""
 
 def check_host_status(host: str = '127.0.0.1', port: None | int = None) -> bool:
     """
@@ -80,14 +83,14 @@ class e2eeftpClientCli:
     def run(self):
         self.console.clear()
         self.console.print(Panel.fit(
-            "[bold cyan]E2EE FTP Client[/bold cyan]\n[dim]Type 'HELP' for commands[/dim]",
+            "[bold cyan]E2EE FTP Client[/bold cyan]",
             border_style="magenta"
         ))
         
         try:
             while True:
                 # Use Prompt.ask for a clean input experience
-                command_input = Prompt.ask("[bold green]>>>[/bold green]").strip()
+                command_input = Prompt.ask("[bold green]>>> [/bold green]").strip()
                 
                 if not command_input:
                     continue
