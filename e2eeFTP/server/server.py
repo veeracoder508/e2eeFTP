@@ -283,7 +283,7 @@ class e2eeftp(socketserver.ThreadingTCPServer):
     """
     allow_reuse_address = True
 
-    def __init__(self, host='127.0.0.1', port=5001) -> None:
+    def __init__(self, host: str='127.0.0.1', port: int=5001) -> None:
         """
         Initializes the server and binds it to a host and port.
 

@@ -52,5 +52,10 @@ if __name__ == "__main__":
     client.send("mini-veera.jpg")  # Testing send request
     client.get('mini-veera.jpg')   # Testing get request
     client.list()                  # Testing list request
+    client.delete('mini-veera.jpg')# Testing delete request
+)
 ```
 You can send any file - image(png, jpeg), text(py, txt, c), executable, commpressed file(zip, rar, tar, gz) and more.
+
+you can also cutomize the server to add or upgrage any methods. check `custom_server.py` for an example.
+

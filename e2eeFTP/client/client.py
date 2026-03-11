@@ -73,7 +73,7 @@ class e2eeftpClient:
         """
         if not os.path.exists(filepath): 
             log.error(f"File not found: {filepath}")
-            return
+            return 404
         
         log.info(f"Attempting to send {os.path.basename(filepath)}...")
         try:
@@ -124,13 +124,13 @@ class e2eeftpClient:
                 header = self._recv_until(sock, b'\n').decode().strip()
                 if not header:
                     log.error("Connection closed by server without a response.")
-                    return
+                    return 500
 
                 try:
                     code, val = header.split("|", 1)
                 except ValueError:
                     log.error(f"Received malformed header from server: {header}")
-                    return
+                    return 400
                 
                 if code == "200":
                     filesize = int(val)
@@ -181,19 +181,19 @@ class e2eeftpClient:
                 header = self._recv_until(sock, b'\n').decode().strip()
                 if not header:
                     log.error("Connection closed by server without a response.")
-                    return
+                    return 500
 
                 try:
                     code, val = header.split("|", 1)
                 except ValueError:
                     log.error(f"Received malformed header from server: {header}")
-                    return
+                    return 400
 
                 if code == "200":
                     list_size = int(val)
                     if list_size == 0:
                         log.info("Server has no files in the 'received' directory.")
-                        return
+                        return 200
 
                     log.info(f"Receiving file list ({list_size} bytes)...")
                     buf = b""
@@ -244,7 +244,7 @@ class e2eeftpClient:
                 response = self._recv_until(sock, b'\n').decode().strip()
                 if not response:
                     log.error("Connection closed by server without a response.")
-                    return
+                    return 500
 
                 try:
                     code, val = response.split("|", 1)

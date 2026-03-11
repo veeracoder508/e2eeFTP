@@ -10,6 +10,7 @@ import os
 import logging
 import socketserver
 
+
 # It's good practice to use the same logger as the base class
 log = logging.getLogger(__name__)
 
@@ -104,7 +105,7 @@ class CustomE2EERequestHandler(E2EEFTPRequestHandler):
             self.request.sendall(b"400|Malformed request\n")
 
 class CustomE2EEFTPServer(e2eeftp):
-    def __init__(self, host='127.0.0.1', port=5001):
+    def __init__(self, host: str='127.0.0.1', port: int=5001):
         socketserver.ThreadingTCPServer.__init__(self, (host, port), CustomE2EERequestHandler)
         self.host, self.port = host, port
 
