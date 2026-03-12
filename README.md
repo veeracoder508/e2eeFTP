@@ -14,7 +14,6 @@
 This is a custom file transfer protocol to transfer file in a secure tunnel with e2ee encryption from client to server.
 
 # concepts used
-
 ## What is e2ee encryption?
 End-to-end encryption (E2EE) is a type of messaging that keeps messages private from everyone, including the messaging service. When E2EE is used, a message only appears in decrypted form for the person sending the message and the person receiving the message. The sender is one "end" of the conversation and the recipient is the other "end"; hence the name "end-to-end."
 
@@ -39,16 +38,15 @@ server = e2eeftp()
 
 if __name__ == "__main__":
     server.run()
-
+```
 
 For the client this is the simple setup.
 ```python
 # client.py
 from e2eeFTP import e2eeftpClient
 
-client = e2eeftpClient()
-
 if __name__ == "__main__":
+    client = e2eeftpClient()
     client.send("mini-veera.jpg")  # Testing send request
     client.get('mini-veera.jpg')   # Testing get request
     client.list()                  # Testing list request

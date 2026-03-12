@@ -1,5 +1,4 @@
 import socket
-import base64
 import os
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import x25519, ed25519

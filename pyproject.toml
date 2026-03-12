@@ -1,6 +1,6 @@
 [project]
 name = "e2eeftp"
-version = "0.0.0b2"
+version = "0.0.0b3"
 authors = [
   { name="R A Veeraragavan", email="veeracoder123@gmail.com" },
 ]

@@ -6,6 +6,7 @@ from ..auth import E2EE, AESCipher
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ed25519
 
+
 # Configure logging to output to both console and file
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
@@ -328,7 +329,9 @@ class e2eeftp(socketserver.ThreadingTCPServer):
         self.host, self.port = host, port
 
     def _generate_server_keys_if_missing(self) -> None:
-        """Generates and saves server key pair if it doesn't exist."""
+        """
+        Generates and saves server key pair if it doesn't exist.
+        """
         server_key_path = "server_id.key"
         if not os.path.exists(server_key_path):
             log.warning(f"Server identity key '{server_key_path}' not found. Generating a new one.")

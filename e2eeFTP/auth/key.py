@@ -1,12 +1,12 @@
 from cryptography.hazmat.primitives.asymmetric import ed25519
 from cryptography.hazmat.primitives import serialization
 import base64
-import os
 from rich import print
 
 def generate_keys():
-    """Generates and saves key pairs for server and client."""
-    
+    """
+    Generates and saves key pairs for server and client.
+    """
     # --- Generate Server Keys ---
     print("--- Generating Server Keys ---")
     server_priv_key = ed25519.Ed25519PrivateKey.generate()
