@@ -1,5 +1,5 @@
 <img alt="PYTHON" src="https://img.shields.io/badge/python-%23000.svg?&style=for-the-badge&logo=python&logoColor=white"/><img alt="SOCKET" src="https://img.shields.io/badge/socket-%23E34F26.svg?&style=for-the-badge&logo=socket&logoColor=white"/><img alt="UV" src="https://img.shields.io/badge/uv-%236C3BAA.svg?&style=for-the-badge&logo=uv&logoColor=white"/><br>
-<a href="https://github.com/veeracoder508/e22eftp"><img alt="GITHUB" src="https://img.shields.io/badge/github-%23000.svg?&style=for-the-badge&logo=github&logoColor=white"/></a><a herf="https://github.com/veeracoder508/e22eftp/issues"><img alt="GITHUB" src="https://img.shields.io/badge/issues-%23000.svg?&style=for-the-badge"/></a>
+<a href="https://github.com/veeracoder508/e2eeFTP"><img alt="GITHUB" src="https://img.shields.io/badge/github-%23000.svg?&style=for-the-badge&logo=github&logoColor=white"/></a><a herf="https://github.com/veeracoder508/e2eeFTP/issues"><img alt="GITHUB" src="https://img.shields.io/badge/issues-%23000.svg?&style=for-the-badge"/></a>
 
 # Table Of Content
 1. [introduction (*e2eeftp*)](#e2eeftp-end-to-end-file-transfer-protocol)
