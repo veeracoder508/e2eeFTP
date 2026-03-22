@@ -1,4 +1,4 @@
-<img alt="PYTHON" src="https://img.shields.io/badge/python-%23000.svg?&style=for-the-badge&logo=flask&logoColor=white"/><img alt="SOCKET" src="https://img.shields.io/badge/socket-%23E34F26.svg?&style=for-the-badge&logo=socket&logoColor=white"/>
+<img alt="PYTHON" src="https://img.shields.io/badge/python-%23000.svg?&style=for-the-badge&logo=flask&logoColor=white"/><img alt="SOCKET" src="https://img.shields.io/badge/socket-%23E34F26.svg?&style=for-the-badge&logo=socket&logoColor=white"/><img alt="UV" src="https://img.shields.io/badge/uv-%23E34F26.svg?&style=for-the-badge&logo=uv&logoColor=white"/>
 
 # Table Of Content
 1. [introduction (*e2eeftp*)](#e2eeftp-end-to-end-file-transfer-protocol)
