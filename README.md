@@ -1,4 +1,6 @@
-<img alt="PYTHON" src="https://img.shields.io/badge/python-%23000.svg?&style=for-the-badge&logo=python&logoColor=white"/><img alt="SOCKET" src="https://img.shields.io/badge/socket-%23E34F26.svg?&style=for-the-badge&logo=socket&logoColor=white"/><img alt="UV" src="https://img.shields.io/badge/uv-%236C3BAA.svg?&style=for-the-badge&logo=uv&logoColor=white"/>
+<img alt="PYTHON" src="https://img.shields.io/badge/python-%23000.svg?&style=for-the-badge&logo=python&logoColor=white"/><img alt="SOCKET" src="https://img.shields.io/badge/socket-%23E34F26.svg?&style=for-the-badge&logo=socket&logoColor=white"/><img alt="UV" src="https://img.shields.io/badge/uv-%236C3BAA.svg?&style=for-the-badge&logo=uv&logoColor=white"/><br>
+<a href="https://github.com/veeracoder508/e22eftp"><img alt="GITHUB" src="https://img.shields.io/badge/github-%23000.svg?&style=for-the-badge&logo=github&logoColor=white"/></a><a herf="https://github.com/veeracoder508/e22eftp/issues"><img alt="GITHUB" src="https://img.shields.io/badge/issues-%23000.svg?&style=for-the-badge"/></a>
+
 # Table Of Content
 1. [introduction (*e2eeftp*)](#e2eeftp-end-to-end-file-transfer-protocol)
 2. [concepts used](#concepts-used)
@@ -7,11 +9,9 @@
 3. [requirements](#requirements)
 4. [how to start the server?](#how-to-start-the-server)
 
-[github](https://github.com/veeracoder508/e22eftp)
-[issues](https://github.com/veeracoder508/e22eftp/issues)
+-----
 
-
-# e2eeftp(0.0.0b2) (end-to-end encryptioned file transfer protocol)
+# e2eeftp(0.0.0b2) (*end-to-end encryptioned file transfer protocol*)
 This is a custom file transfer protocol to transfer file in a secure tunnel with e2ee encryption from client to server.
 
 # concepts used
@@ -58,6 +58,7 @@ You can send any file - image(png, jpeg), text(py, txt, c), executable, commpres
 
 you can also cutomize the server to add or upgrage any methods. check `custom_server.py` for an example.
 
+-----
 
 sources:
 - [cloudflare](https://www.cloudflare.com/en-in/learning/privacy/what-is-end-to-end-encryption/)
