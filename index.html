@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>e2eeftp Documentation</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #52525b; }
+        .dark ::-webkit-scrollbar-thumb { background: #3f3f46; }
+        
+        /* Animation utilities */
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-zinc-50 dark:bg-black min-h-screen font-sans text-black dark:text-white flex flex-col transition-colors duration-0 selection:bg-zinc-200 dark:selection:bg-white/30">
+
+    <!-- Search Modal Overlay (Hidden by default) -->
+    <div id="searchModal" class="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 hidden">
+        <div class="fixed inset-0 bg-zinc-50/80 dark:bg-black/80 backdrop-blur-sm" onclick="toggleSearch()"></div>
+        <div class="relative w-full max-w-2xl bg-white dark:bg-[#111] rounded-xl shadow-[0_0_0_1px_rgba(0,0,0,0.05),0_10px_30px_rgba(0,0,0,0.1)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.1),0_10px_30px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col max-h-[80vh] fade-in">
+            <div class="flex items-center px-4 py-3 border-b border-zinc-200 dark:border-white/10">
+                <i data-lucide="search" class="text-zinc-400 dark:text-zinc-500 mr-3 w-5 h-5"></i>
+                <input type="text" id="searchInput" class="flex-1 bg-transparent border-0 text-black dark:text-white placeholder-zinc-400 focus:ring-0 outline-none text-base" placeholder="Search documentation...">
+                <div class="hidden sm:flex items-center gap-1 ml-3">
+                    <kbd class="inline-block px-1.5 py-0.5 text-[10px] font-mono font-medium text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded">ESC</kbd>
+                </div>
+            </div>
+            <div class="overflow-y-auto flex-1 p-2 h-64 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
+                <p class="text-sm">Type to search the documentation...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="sticky top-0 z-40 w-full backdrop-blur-md bg-zinc-50/80 dark:bg-black/80 border-b border-zinc-200 dark:border-white/10">
+        <div class="flex items-center justify-between px-4 lg:px-6 h-14">
+            <div class="flex items-center gap-4">
+                <!-- Mobile Menu Button -->
+                <button onclick="toggleMenu()" class="lg:hidden relative w-9 h-9 -ml-2 text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white rounded-md flex items-center justify-center focus:outline-none">
+                    <i data-lucide="menu" id="menuIconMenu" class="absolute transition-all duration-300"></i>
+                    <i data-lucide="x" id="menuIconX" class="absolute transition-all duration-300 opacity-0 rotate-90 scale-50"></i>
+                </button>
+                
+                <div class="flex items-center gap-2 cursor-pointer" onclick="navigateTo('introduction')">
+                    <div class="w-7 h-7 flex items-center justify-center text-black dark:text-white">
+                        <i data-lucide="triangle" class="fill-current w-5 h-5"></i>
+                    </div>
+                    <span class="font-semibold text-base tracking-tight text-black dark:text-white">e2eeftp</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 sm:gap-4">
+                <!-- Desktop Search Trigger -->
+                <div class="hidden sm:flex items-center">
+                    <button onclick="toggleSearch()" class="flex items-center w-64 px-3 py-1.5 text-sm text-zinc-500 dark:text-zinc-400 bg-white dark:bg-[#111] border border-zinc-200 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/20 rounded-full transition-all focus:outline-none shadow-sm">
+                        <i data-lucide="search" class="mr-2 opacity-70 w-4 h-4"></i>
+                        <span class="flex-1 text-left">Search docs...</span>
+                        <kbd class="inline-block px-1.5 py-0.5 text-[10px] font-mono font-medium text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-black border border-zinc-200 dark:border-white/10 rounded">⌘K</kbd>
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-1 sm:gap-2 sm:border-l border-zinc-200 dark:border-white/10 pl-0 sm:pl-4 ml-0 sm:ml-2">
+                    <button onclick="toggleSearch()" class="sm:hidden p-2 text-zinc-500 hover:text-black dark:text-zinc-400 dark:hover:text-white rounded-md hover:bg-zinc-200/50 dark:hover:bg-white/5 transition-colors">
+                        <i data-lucide="search" class="w-5 h-5"></i>
+                    </button>
+
+                    <!-- Dark Mode Toggle -->
+                    <button onclick="toggleTheme()" class="relative w-9 h-9 flex items-center justify-center p-2 text-zinc-500 hover:text-black dark:text-zinc-400 dark:hover:text-white rounded-md hover:bg-zinc-200/50 dark:hover:bg-white/5 transition-colors">
+                        <i data-lucide="sun" id="themeIconSun" class="absolute transition-all duration-300 opacity-0 -rotate-90 scale-50 w-5 h-5"></i>
+                        <i data-lucide="moon" id="themeIconMoon" class="absolute transition-all duration-300 opacity-100 rotate-0 scale-100 w-5 h-5"></i>
+                    </button>
+
+                    <!-- GitHub Icon using official filled SVG -->
+                    <a href="https://github.com/yourusername/e2eeftp" target="_blank" class="p-2 text-zinc-500 hover:text-black dark:text-zinc-400 dark:hover:text-white rounded-md hover:bg-zinc-200/50 dark:hover:bg-white/5 transition-colors flex items-center justify-center">
+                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.379.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.161 22 16.418 22 12c0-5.523-4.477-10-10-10z"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="flex flex-1 overflow-hidden relative">
+        
+        <!-- Mobile Overlay -->
+        <div id="mobileOverlay" class="fixed inset-0 bg-zinc-50/80 dark:bg-black/80 z-20 lg:hidden backdrop-blur-sm transition-opacity hidden" onclick="toggleMenu()"></div>
+
+        <!-- Sidebar -->
+        <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-30 w-full lg:w-64 bg-zinc-50 dark:bg-black border-r-0 lg:border-r border-zinc-200 dark:border-white/10 overflow-y-auto transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out pb-20 pt-20 lg:pt-8 px-4 lg:px-6">            
+            
+            <!-- Segmented Control -->
+            <div class="mb-6 border-b border-zinc-200 dark:border-white/10 pb-6">
+                <ul class="flex items-center gap-1 p-1 bg-zinc-200/50 dark:bg-white/5 rounded-lg">
+                    <li class="flex-1">
+                        <button onclick="switchContext('learn')" id="tab-learn" class="tab-btn w-full px-2 py-1.5 text-[13px] font-medium rounded-md transition-all bg-white dark:bg-[#222] text-black dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10">Learn</button>
+                    </li>
+                    <li class="flex-1">
+                        <button onclick="switchContext('examples')" id="tab-examples" class="tab-btn w-full px-2 py-1.5 text-[13px] font-medium rounded-md transition-all text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-zinc-200/50 dark:hover:bg-white/5">Examples</button>
+                    </li>
+                    <li class="flex-1">
+                        <button onclick="switchContext('contribute')" id="tab-contribute" class="tab-btn w-full px-2 py-1.5 text-[13px] font-medium rounded-md transition-all text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-zinc-200/50 dark:hover:bg-white/5">Contribute</button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Context Nav (Learn) -->
+            <nav id="nav-learn" class="space-y-8 lg:space-y-8 space-y-10 fade-in">
+                <div>
+                    <h3 class="text-sm font-semibold text-black dark:text-white tracking-tight mb-3">Getting Started</h3>
+                    <ul class="border-l border-zinc-200 dark:border-white/10 ml-1.5 space-y-1">
+                        <li><button onclick="navigateTo('introduction')" class="nav-link w-full flex items-center relative pl-4 pr-3 py-2 text-base lg:text-sm text-left rounded-r-md font-medium text-black dark:text-white bg-zinc-200/50 dark:bg-white/5" data-page="introduction"><div class="active-indicator absolute left-[-1px] top-0 bottom-0 w-[2px] bg-black dark:bg-white rounded-full"></div>Introduction</button></li>
+                        <li><button onclick="navigateTo('installation')" class="nav-link w-full flex items-center relative pl-4 pr-3 py-2 text-base lg:text-sm text-left rounded-r-md text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-zinc-200/30 dark:hover:bg-white/5" data-page="installation"><div class="active-indicator hidden absolute left-[-1px] top-0 bottom-0 w-[2px] bg-black dark:bg-white rounded-full"></div>Installation</button></li>
+                        <li><button onclick="navigateTo('quickstart')" class="nav-link w-full flex items-center relative pl-4 pr-3 py-2 text-base lg:text-sm text-left rounded-r-md text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-zinc-200/30 dark:hover:bg-white/5" data-page="quickstart"><div class="active-indicator hidden absolute left-[-1px] top-0 bottom-0 w-[2px] bg-black dark:bg-white rounded-full"></div>Quick Start</button></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-black dark:text-white tracking-tight mb-3">Core Concepts</h3>
+                    <ul class="border-l border-zinc-200 dark:border-white/10 ml-1.5 space-y-1">
+                        <li><button onclick="navigateTo('coming-soon')" class="nav-link w-full flex items-center relative pl-4 pr-3 py-2 text-base lg:text-sm text-left rounded-r-md text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-zinc-200/30 dark:hover:bg-white/5" data-page="coming-soon"><div class="active-indicator hidden absolute left-[-1px] top-0 bottom-0 w-[2px] bg-black dark:bg-white rounded-full"></div>Encryption Model</button></li>
+                        <li><button onclick="navigateTo('coming-soon')" class="nav-link w-full flex items-center relative pl-4 pr-3 py-2 text-base lg:text-sm text-left rounded-r-md text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-zinc-200/30 dark:hover:bg-white/5" data-page="coming-soon"><div class="active-indicator hidden absolute left-[-1px] top-0 bottom-0 w-[2px] bg-black dark:bg-white rounded-full"></div>Key Management</button></li>
+                        <li><button onclick="navigateTo('coming-soon')" class="nav-link w-full flex items-center relative pl-4 pr-3 py-2 text-base lg:text-sm text-left rounded-r-md text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-zinc-200/30 dark:hover:bg-white/5" data-page="coming-soon"><div class="active-indicator hidden absolute left-[-1px] top-0 bottom-0 w-[2px] bg-black dark:bg-white rounded-full"></div>Configuration</button></li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto w-full scroll-smooth">
+            <div class="px-6 py-10 lg:px-12 lg:py-16 max-w-4xl mx-auto flex flex-col min-h-full">
+                
+                <div class="flex-1">
+                    <!-- Breadcrumbs -->
+                    <div class="flex items-center text-sm text-zinc-500 dark:text-zinc-400 mb-8 font-medium">
+                        <span>Docs</span>
+                        <i data-lucide="chevron-right" class="mx-1 w-4 h-4"></i>
+                        <span id="breadcrumb" class="text-black dark:text-white capitalize">Introduction</span>
+                    </div>
+
+                    <!-- PAGES -->
+                    <!-- Introduction Page -->
+                    <div id="page-introduction" class="page-content fade-in">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black dark:bg-white text-white dark:text-black text-xs font-semibold mb-8 shadow-sm">
+                            <i data-lucide="shield" class="w-3.5 h-3.5"></i> Secure your transfers today
+                        </div>
+                        <h1 class="text-4xl md:text-5xl font-extrabold tracking-tighter text-black dark:text-white mb-6">Welcome to e2eeftp</h1>
+                        <p class="text-lg md:text-xl text-zinc-600 dark:text-zinc-400 leading-relaxed mb-10 font-normal">
+                            e2eeftp is a powerful, lightweight, and modern Python library for end-to-end encrypted file transfers. Designed for developers who need to integrate military-grade secure file sharing with minimal boilerplate.
+                        </p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
+                            <div class="p-6 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111] shadow-sm hover:border-zinc-300 dark:hover:border-white/20 transition-colors">
+                                <div class="w-10 h-10 bg-zinc-100 dark:bg-white/10 rounded-lg flex items-center justify-center text-black dark:text-white mb-4"><i data-lucide="lock" class="w-5 h-5"></i></div>
+                                <h3 class="text-lg font-semibold tracking-tight text-black dark:text-white mb-2">Zero-Knowledge</h3>
+                                <p class="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">Files are encrypted before they ever leave your machine. The server never sees your raw data, ensuring absolute privacy.</p>
+                            </div>
+                            <div class="p-6 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111] shadow-sm hover:border-zinc-300 dark:hover:border-white/20 transition-colors">
+                                <div class="w-10 h-10 bg-zinc-100 dark:bg-white/10 rounded-lg flex items-center justify-center text-black dark:text-white mb-4"><i data-lucide="file-up" class="w-5 h-5"></i></div>
+                                <h3 class="text-lg font-semibold tracking-tight text-black dark:text-white mb-2">Intuitive API</h3>
+                                <p class="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">A clean, pythonic interface that abstracts away the complex cryptography, letting you focus on building your app.</p>
+                            </div>
+                        </div>
+                        <h2 class="text-2xl font-bold tracking-tight text-black dark:text-white mb-4 border-b border-zinc-200 dark:border-white/10 pb-4 mt-12">Why e2eeftp?</h2>
+                        <p class="text-zinc-600 dark:text-zinc-400 leading-relaxed mb-6">Standard FTP and even SFTP have limitations when it comes to true end-to-end privacy, especially when storing files on third-party servers. e2eeftp bridges the gap by enforcing strong local encryption before transmission.</p>
+                        <ul class="list-disc list-inside text-zinc-600 dark:text-zinc-400 space-y-3 mb-8 ml-2">
+                            <li>Automatic key generation and management.</li>
+                            <li>Chunked streaming for massive file support.</li>
+                            <li>Built-in integrity checks to prevent tampering.</li>
+                            <li>Seamless integration with existing Python codebases.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Installation Page -->
+                    <div id="page-installation" class="page-content fade-in hidden">
+                        <h1 class="text-4xl font-extrabold tracking-tighter text-black dark:text-white mb-6">Installation</h1>
+                        <p class="text-lg text-zinc-600 dark:text-zinc-400 mb-8">Getting started with e2eeftp is as simple as running a single command. We support Python 3.8+ on Linux, macOS, and Windows.</p>
+                        
+                        <h2 class="text-xl font-semibold tracking-tight text-black dark:text-white mb-4">Using pip</h2>
+                        <p class="text-zinc-600 dark:text-zinc-400 mb-4">The easiest way to install e2eeftp is via the standard Python package manager, pip.</p>
+                        
+                        <!-- Reusable Code Block Structure -->
+                        <div class="relative group my-6 rounded-xl overflow-hidden bg-[#0A0A0A] dark:bg-[#111] border border-zinc-200 dark:border-white/10 shadow-sm">
+                            <div class="flex items-center justify-between px-4 py-3 bg-zinc-100/50 dark:bg-[#1A1A1A] border-b border-zinc-200 dark:border-white/10">
+                                <span class="text-xs font-mono text-zinc-500 dark:text-zinc-400">bash</span>
+                                <button onclick="copyCode(this)" class="text-zinc-400 hover:text-black dark:hover:text-white transition-colors p-1.5 rounded-md hover:bg-zinc-200 dark:hover:bg-white/10" title="Copy code">
+                                    <i data-lucide="copy" class="w-3.5 h-3.5 icon-copy"></i>
+                                    <i data-lucide="check" class="w-3.5 h-3.5 icon-check hidden text-black dark:text-white"></i>
+                                </button>
+                            </div>
+                            <div class="p-4 overflow-x-auto">
+                                <pre class="text-sm font-mono text-zinc-300 dark:text-zinc-300 leading-relaxed"><code class="code-content">pip install e2eeftp</code></pre>
+                            </div>
+                        </div>
+
+                        <h2 class="text-xl font-semibold tracking-tight text-black dark:text-white mb-4 mt-10">Using Poetry</h2>
+                        <div class="relative group my-6 rounded-xl overflow-hidden bg-[#0A0A0A] dark:bg-[#111] border border-zinc-200 dark:border-white/10 shadow-sm">
+                            <div class="flex items-center justify-between px-4 py-3 bg-zinc-100/50 dark:bg-[#1A1A1A] border-b border-zinc-200 dark:border-white/10">
+                                <span class="text-xs font-mono text-zinc-500 dark:text-zinc-400">bash</span>
+                                <button onclick="copyCode(this)" class="text-zinc-400 hover:text-black dark:hover:text-white transition-colors p-1.5 rounded-md hover:bg-zinc-200 dark:hover:bg-white/10" title="Copy code">
+                                    <i data-lucide="copy" class="w-3.5 h-3.5 icon-copy"></i>
+                                    <i data-lucide="check" class="w-3.5 h-3.5 icon-check hidden text-black dark:text-white"></i>
+                                </button>
+                            </div>
+                            <div class="p-4 overflow-x-auto">
+                                <pre class="text-sm font-mono text-zinc-300 dark:text-zinc-300 leading-relaxed"><code class="code-content">poetry add e2eeftp</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="mt-10 p-5 border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 rounded-xl shadow-sm">
+                            <h4 class="font-semibold text-black dark:text-white flex items-center gap-2 mb-2"><i data-lucide="key" class="w-4 h-4"></i> Cryptography Dependencies</h4>
+                            <p class="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                                e2eeftp relies on modern cryptographic libraries. Ensure your system has the necessary build tools if you are installing on a pristine Linux environment (e.g., <code class="bg-zinc-100 dark:bg-white/10 px-1.5 py-0.5 rounded text-black dark:text-white font-mono text-xs">build-essential</code>, <code class="bg-zinc-100 dark:bg-white/10 px-1.5 py-0.5 rounded text-black dark:text-white font-mono text-xs">libssl-dev</code>).
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Quick Start Page -->
+                    <div id="page-quickstart" class="page-content fade-in hidden">
+                        <h1 class="text-4xl font-extrabold tracking-tighter text-black dark:text-white mb-6">Quick Start</h1>
+                        <p class="text-lg text-zinc-600 dark:text-zinc-400 mb-8">Let's dive right in. In this guide, we'll generate encryption keys, connect to a server, and securely upload a file.</p>
+                        
+                        <h2 class="text-xl font-semibold tracking-tight text-black dark:text-white mb-4">Your First Secure Transfer</h2>
+                        <p class="text-zinc-600 dark:text-zinc-400 mb-4">Create a new file named <code class="bg-zinc-200 dark:bg-white/10 px-1.5 py-0.5 rounded text-black dark:text-white font-mono text-sm">transfer.py</code> and add the following code:</p>
+                        
+                        <div class="relative group my-6 rounded-xl overflow-hidden bg-[#0A0A0A] dark:bg-[#111] border border-zinc-200 dark:border-white/10 shadow-sm">
+                            <div class="flex items-center justify-between px-4 py-3 bg-zinc-100/50 dark:bg-[#1A1A1A] border-b border-zinc-200 dark:border-white/10">
+                                <span class="text-xs font-mono text-zinc-500 dark:text-zinc-400">python</span>
+                                <button onclick="copyCode(this)" class="text-zinc-400 hover:text-black dark:hover:text-white transition-colors p-1.5 rounded-md hover:bg-zinc-200 dark:hover:bg-white/10" title="Copy code">
+                                    <i data-lucide="copy" class="w-3.5 h-3.5 icon-copy"></i>
+                                    <i data-lucide="check" class="w-3.5 h-3.5 icon-check hidden text-black dark:text-white"></i>
+                                </button>
+                            </div>
+                            <div class="p-4 overflow-x-auto">
+                                <pre class="text-sm font-mono text-zinc-300 dark:text-zinc-300 leading-relaxed"><code class="code-content">import e2eeftp
+
+# 1. Generate a new secure keypair
+keys = e2eeftp.generate_keypair()
+
+# 2. Initialize the client
+client = e2eeftp.Client(
+    host="ftp.example.com",
+    username="user",
+    password="super_secret_password"
+)
+
+# 3. Encrypt and upload the file in one go
+client.upload_encrypted(
+    local_path="sensitive_data.pdf",
+    remote_path="/vault/secure_data.enc",
+    public_key=keys.public
+)
+
+print("File encrypted and transferred successfully!")</code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Coming Soon Page -->
+                    <div id="page-coming-soon" class="page-content fade-in hidden">
+                        <div class="py-24 text-center">
+                            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-zinc-200/50 dark:bg-white/5 mb-6">
+                                <i data-lucide="settings" class="text-zinc-500 w-8 h-8 animate-[spin_3s_linear_infinite]"></i>
+                            </div>
+                            <h2 class="text-2xl font-bold tracking-tight text-black dark:text-white mb-2">Coming Soon</h2>
+                            <p class="text-zinc-500 dark:text-zinc-400">This section of the documentation is being written.</p>
+                            <button onclick="navigateTo('introduction')" class="mt-8 px-5 py-2.5 bg-black text-white dark:bg-white dark:text-black font-medium text-sm rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors shadow-md">
+                                Return Home
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div id="pagination" class="mt-20 pt-8 border-t border-zinc-200 dark:border-white/10 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div id="pagination-prev" class="flex justify-start"></div>
+                        <div id="pagination-next" class="flex justify-end text-right"></div>
+                    </div>
+
+                </div>
+
+                <!-- Footer -->
+                <footer class="mt-20 pt-8 pb-12 border-t border-zinc-200 dark:border-white/10">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                        <div class="flex flex-col gap-2">
+                            <div class="flex items-center gap-2 text-black dark:text-white">
+                                <i data-lucide="triangle" class="fill-current w-4 h-4"></i>
+                                <span class="font-semibold text-sm tracking-tight">e2eeftp</span>
+                            </div>
+                            <p class="text-xs text-zinc-500 dark:text-zinc-400">© 2026 e2eeftp. MIT Licensed.</p>
+                        </div>
+                        <div class="flex items-center gap-6 text-sm text-zinc-500 dark:text-zinc-400">
+                            <a href="#" class="hover:text-black dark:hover:text-white transition-colors">Documentation</a>
+                            <a href="#" class="hover:text-black dark:hover:text-white transition-colors">PyPI</a>
+                            <a href="#" class="hover:text-black dark:hover:text-white transition-colors">GitHub</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // State
+        let isDarkMode = true;
+        let isMenuOpen = false;
+        let isSearchOpen = false;
+        let currentPage = 'introduction';
+
+        // Page order for pagination
+        const pageOrder = ['introduction', 'installation', 'quickstart'];
+        const pageTitles = {
+            'introduction': 'Introduction',
+            'installation': 'Installation',
+            'quickstart': 'Quick Start'
+        };
+
+        // Theme Toggle
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            document.documentElement.classList.toggle('dark', isDarkMode);
+            
+            const sun = document.getElementById('themeIconSun');
+            const moon = document.getElementById('themeIconMoon');
+            
+            if (isDarkMode) {
+                sun.classList.add('opacity-0', '-rotate-90', 'scale-50');
+                sun.classList.remove('opacity-100', 'rotate-0', 'scale-100');
+                moon.classList.add('opacity-100', 'rotate-0', 'scale-100');
+                moon.classList.remove('opacity-0', 'rotate-90', 'scale-50');
+            } else {
+                sun.classList.remove('opacity-0', '-rotate-90', 'scale-50');
+                sun.classList.add('opacity-100', 'rotate-0', 'scale-100');
+                moon.classList.remove('opacity-100', 'rotate-0', 'scale-100');
+                moon.classList.add('opacity-0', 'rotate-90', 'scale-50');
+            }
+        }
+
+        // Mobile Menu Toggle
+        function toggleMenu() {
+            isMenuOpen = !isMenuOpen;
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            const menuBtn = document.getElementById('menuIconMenu');
+            const xBtn = document.getElementById('menuIconX');
+
+            if (isMenuOpen) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                menuBtn.classList.add('opacity-0', '-rotate-90', 'scale-50');
+                xBtn.classList.remove('opacity-0', 'rotate-90', 'scale-50');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+                menuBtn.classList.remove('opacity-0', '-rotate-90', 'scale-50');
+                xBtn.classList.add('opacity-0', 'rotate-90', 'scale-50');
+            }
+        }
+
+        // Search Toggle
+        function toggleSearch() {
+            isSearchOpen = !isSearchOpen;
+            const modal = document.getElementById('searchModal');
+            if (isSearchOpen) {
+                modal.classList.remove('hidden');
+                setTimeout(() => document.getElementById('searchInput').focus(), 50);
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        // Keyboard shortcuts
+        window.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                toggleSearch();
+            }
+            if (e.key === 'Escape' && isSearchOpen) {
+                toggleSearch();
+            }
+        });
+
+        // Top-Level Segmented Control
+        function switchContext(context) {
+            // Update tabs styling
+            const tabs = ['learn', 'examples', 'contribute'];
+            tabs.forEach(tab => {
+                const el = document.getElementById(`tab-${tab}`);
+                if (tab === context) {
+                    el.className = "tab-btn w-full px-2 py-1.5 text-[13px] font-medium rounded-md transition-all bg-white dark:bg-[#222] text-black dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10";
+                } else {
+                    el.className = "tab-btn w-full px-2 py-1.5 text-[13px] font-medium rounded-md transition-all text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-zinc-200/50 dark:hover:bg-white/5";
+                }
+            });
+
+            const navLearn = document.getElementById('nav-learn');
+            if (context === 'learn') {
+                navLearn.classList.remove('hidden');
+                navigateTo('introduction');
+            } else {
+                navLearn.classList.add('hidden');
+                navigateTo('coming-soon', context);
+            }
+        }
+
+        // Main Navigation Logic
+        function navigateTo(pageId, contextName = null) {
+            currentPage = pageId;
+            
+            // 1. Hide all pages
+            document.querySelectorAll('.page-content').forEach(el => el.classList.add('hidden'));
+            
+            // 2. Show target page
+            const targetPage = document.getElementById(`page-${pageId}`) || document.getElementById('page-coming-soon');
+            targetPage.classList.remove('hidden');
+
+            // 3. Update Breadcrumbs
+            const breadcrumb = document.getElementById('breadcrumb');
+            if (contextName) {
+                breadcrumb.textContent = contextName.charAt(0).toUpperCase() + contextName.slice(1);
+            } else {
+                breadcrumb.textContent = pageTitles[pageId] || 'Documentation';
+            }
+
+            // 4. Update Sidebar Active States
+            document.querySelectorAll('.nav-link').forEach(el => {
+                el.className = "nav-link w-full flex items-center relative pl-4 pr-3 py-2 text-base lg:text-sm text-left rounded-r-md text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-zinc-200/30 dark:hover:bg-white/5";
+                el.querySelector('.active-indicator').classList.add('hidden');
+                
+                if(el.getAttribute('data-page') === pageId) {
+                    el.className = "nav-link w-full flex items-center relative pl-4 pr-3 py-2 text-base lg:text-sm text-left rounded-r-md font-medium text-black dark:text-white bg-zinc-200/50 dark:bg-white/5";
+                    el.querySelector('.active-indicator').classList.remove('hidden');
+                }
+            });
+
+            // 5. Update Pagination
+            updatePagination();
+
+            // 6. Close mobile menu if open
+            if (isMenuOpen) toggleMenu();
+            
+            // Scroll to top
+            document.querySelector('main').scrollTop = 0;
+        }
+
+        function updatePagination() {
+            const prevContainer = document.getElementById('pagination-prev');
+            const nextContainer = document.getElementById('pagination-next');
+            const paginationRoot = document.getElementById('pagination');
+            
+            prevContainer.innerHTML = '';
+            nextContainer.innerHTML = '';
+            
+            const currentIndex = pageOrder.indexOf(currentPage);
+            
+            if (currentIndex === -1) {
+                paginationRoot.classList.add('hidden');
+                return;
+            } else {
+                paginationRoot.classList.remove('hidden');
+            }
+
+            if (currentIndex > 0) {
+                const prevId = pageOrder[currentIndex - 1];
+                prevContainer.innerHTML = `
+                    <button onclick="navigateTo('${prevId}')" class="group flex flex-col items-start p-4 -ml-4 rounded-2xl hover:bg-zinc-200/50 dark:hover:bg-white/5 transition-colors w-full">
+                        <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-1">Previous</span>
+                        <span class="flex items-center text-lg font-semibold text-black dark:text-white">
+                            <i data-lucide="chevron-left" class="w-5 h-5 mr-2 text-zinc-400 group-hover:text-black dark:group-hover:text-white transition-all group-hover:-translate-x-1"></i>
+                            ${pageTitles[prevId]}
+                        </span>
+                    </button>
+                `;
+            }
+
+            if (currentIndex < pageOrder.length - 1) {
+                const nextId = pageOrder[currentIndex + 1];
+                nextContainer.innerHTML = `
+                    <button onclick="navigateTo('${nextId}')" class="group flex flex-col items-end p-4 -mr-4 rounded-2xl hover:bg-zinc-200/50 dark:hover:bg-white/5 transition-colors w-full">
+                        <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-1">Next</span>
+                        <span class="flex items-center text-lg font-semibold text-black dark:text-white">
+                            ${pageTitles[nextId]}
+                            <i data-lucide="chevron-right" class="w-5 h-5 ml-2 text-zinc-400 group-hover:text-black dark:group-hover:text-white transition-all group-hover:translate-x-1"></i>
+                        </span>
+                    </button>
+                `;
+            }
+            
+            lucide.createIcons(); // Re-render icons injected dynamically
+        }
+
+        // Copy Code Functionality
+        function copyCode(btn) {
+            const container = btn.closest('.group');
+            const code = container.querySelector('.code-content').innerText;
+            
+            const iconCopy = btn.querySelector('.icon-copy');
+            const iconCheck = btn.querySelector('.icon-check');
+
+            const fallbackCopy = () => {
+                const textArea = document.createElement("textarea");
+                textArea.value = code;
+                textArea.style.position = "fixed";
+                textArea.style.left = "-999999px";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showCheckmark();
+                } catch (err) { console.error('Copy failed', err); }
+                textArea.remove();
+            };
+
+            const showCheckmark = () => {
+                iconCopy.classList.add('hidden');
+                iconCheck.classList.remove('hidden');
+                setTimeout(() => {
+                    iconCheck.classList.add('hidden');
+                    iconCopy.classList.remove('hidden');
+                }, 2000);
+            };
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(code).then(showCheckmark).catch(() => fallbackCopy());
+            } else {
+                fallbackCopy();
+            }
+        }
+
+        // Initialize state on load
+        updatePagination();
+    </script>
+</body>
+</html>
