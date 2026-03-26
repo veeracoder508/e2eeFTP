@@ -56,32 +56,64 @@
     <!-- Header -->
     <header class="sticky top-0 z-40 w-full backdrop-blur-md bg-zinc-50/80 dark:bg-black/80 border-b border-zinc-200 dark:border-white/10">
         <div class="flex items-center justify-between px-4 lg:px-6 h-14">
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 sm:gap-4">
                 <!-- Mobile Menu Button -->
                 <button onclick="toggleMenu()" class="lg:hidden relative w-9 h-9 -ml-2 text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white rounded-md flex items-center justify-center focus:outline-none">
                     <i data-lucide="menu" id="menuIconMenu" class="absolute transition-all duration-300"></i>
                     <i data-lucide="x" id="menuIconX" class="absolute transition-all duration-300 opacity-0 rotate-90 scale-50"></i>
                 </button>
                 
+                <!-- Logo -->
                 <div class="flex items-center gap-2 cursor-pointer" onclick="navigateTo('introduction')">
-                    <div class="w-7 h-7 flex items-center justify-center text-black dark:text-white">
-                        <i data-lucide="triangle" class="fill-current w-5 h-5"></i>
+                    <div class="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center text-black dark:text-white">
+                        <i data-lucide="triangle" class="fill-current w-4 h-4 sm:w-5 sm:h-5"></i>
                     </div>
-                    <span class="font-semibold text-base tracking-tight text-black dark:text-white">e2eeftp</span>
+                    <span class="font-semibold text-sm sm:text-base tracking-tight text-black dark:text-white">e2eeftp</span>
+                </div>
+
+                <!-- Version Dropdown -->
+                <div class="relative ml-1 sm:ml-2">
+                    <button onclick="toggleVersionMenu(event)" id="versionBtn" class="flex items-center gap-1.5 text-[11px] sm:text-xs font-medium text-zinc-600 dark:text-zinc-300 hover:text-black dark:hover:text-white transition-colors bg-zinc-200/50 dark:bg-white/5 px-2 py-1 rounded-md border border-zinc-200 dark:border-white/10 focus:outline-none focus:ring-1 focus:ring-black/5 dark:focus:ring-white/10">
+                        <span id="currentVersion">v2.4.0</span>
+                        <i data-lucide="chevron-down" id="versionChevron" class="w-3 h-3 text-zinc-400 transition-transform duration-200"></i>
+                    </button>
+                    
+                    <!-- Dropdown Menu -->
+                    <div id="versionDropdown" class="absolute left-0 top-full mt-2 w-40 bg-white dark:bg-[#111] border border-zinc-200 dark:border-white/10 rounded-xl shadow-lg opacity-0 pointer-events-none transform scale-95 origin-top-left transition-all duration-200 z-50">
+                        <div class="p-1">
+                            <button onclick="selectVersion('v2.4.0', this)" class="version-option w-full flex items-center justify-between px-3 py-1.5 text-sm text-black dark:text-white font-medium rounded-lg hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors">
+                                <span>v2.4.0 <span class="text-[10px] bg-zinc-100 dark:bg-white/10 text-zinc-500 dark:text-zinc-400 px-1.5 py-0.5 rounded ml-1">Latest</span></span>
+                                <i data-lucide="check" class="version-check w-3.5 h-3.5 ml-2"></i>
+                            </button>
+                            <button onclick="selectVersion('v2.3.1', this)" class="version-option w-full flex items-center justify-between px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400 rounded-lg hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors">
+                                v2.3.1
+                                <i data-lucide="check" class="version-check w-3.5 h-3.5 ml-2 hidden"></i>
+                            </button>
+                            <button onclick="selectVersion('v1.8.4', this)" class="version-option w-full flex items-center justify-between px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400 rounded-lg hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors">
+                                v1.8.4
+                                <i data-lucide="check" class="version-check w-3.5 h-3.5 ml-2 hidden"></i>
+                            </button>
+                        </div>
+                        <div class="border-t border-zinc-200 dark:border-white/10 p-1">
+                            <button class="w-full flex items-center px-3 py-1.5 text-xs text-zinc-500 dark:text-zinc-400 rounded-lg hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-black dark:hover:text-white transition-colors">
+                                View all versions
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="flex items-center gap-2 sm:gap-4">
+            <div class="flex items-center gap-1 sm:gap-4">
                 <!-- Desktop Search Trigger -->
                 <div class="hidden sm:flex items-center">
-                    <button onclick="toggleSearch()" class="flex items-center w-64 px-3 py-1.5 text-sm text-zinc-500 dark:text-zinc-400 bg-white dark:bg-[#111] border border-zinc-200 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/20 rounded-full transition-all focus:outline-none shadow-sm">
+                    <button onclick="toggleSearch()" class="flex items-center w-52 lg:w-64 px-3 py-1.5 text-sm text-zinc-500 dark:text-zinc-400 bg-white dark:bg-[#111] border border-zinc-200 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/20 rounded-full transition-all focus:outline-none shadow-sm">
                         <i data-lucide="search" class="mr-2 opacity-70 w-4 h-4"></i>
                         <span class="flex-1 text-left">Search docs...</span>
                         <kbd class="inline-block px-1.5 py-0.5 text-[10px] font-mono font-medium text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-black border border-zinc-200 dark:border-white/10 rounded">⌘K</kbd>
                     </button>
                 </div>
 
-                <div class="flex items-center gap-1 sm:gap-2 sm:border-l border-zinc-200 dark:border-white/10 pl-0 sm:pl-4 ml-0 sm:ml-2">
+                <div class="flex items-center gap-0 sm:gap-2 sm:border-l border-zinc-200 dark:border-white/10 pl-0 sm:pl-4 ml-0 sm:ml-2">
                     <button onclick="toggleSearch()" class="sm:hidden p-2 text-zinc-500 hover:text-black dark:text-zinc-400 dark:hover:text-white rounded-md hover:bg-zinc-200/50 dark:hover:bg-white/5 transition-colors">
                         <i data-lucide="search" class="w-5 h-5"></i>
                     </button>
@@ -93,21 +125,9 @@
                     </button>
 
                     <!-- GitHub Icon using official filled SVG -->
-                    <a href="https://github.com/veeracoder508/e2eeftp" target="_blank" class="p-2 text-zinc-500 hover:text-black dark:text-zinc-400 dark:hover:text-white rounded-md hover:bg-zinc-200/50 dark:hover:bg-white/5 transition-colors flex items-center justify-center">
-                        <svg
-  xmlns="http://www.w3.org/2000/svg"
-  width="20"
-  height="20"
-  viewBox="0 0 24 24"
-  fill="none"
-  stroke="currentColor"
-  stroke-width="2"
-  stroke-linecap="round"
-  stroke-linejoin="round"
-  class="lucide lucide-github"
->
-  <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
-  <path d="M9 18c-4.51 2-5-2-7-2" />
+                    <a href="https://github.com/yourusername/e2eeftp" target="_blank" class="p-2 text-zinc-500 hover:text-black dark:text-zinc-400 dark:hover:text-white rounded-md hover:bg-zinc-200/50 dark:hover:bg-white/5 transition-colors flex items-center justify-center">
+                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.379.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.161 22 16.418 22 12c0-5.523-4.477-10-10-10z"></path>
                         </svg>
                     </a>
                 </div>
@@ -131,10 +151,10 @@
                         <button onclick="switchContext('learn')" id="tab-learn" class="tab-btn w-full px-2 py-1.5 text-[13px] font-medium rounded-md transition-all bg-white dark:bg-[#222] text-black dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10">Learn</button>
                     </li>
                     <li class="flex-1">
-                        <button onclick="switchContext('examples')" id="tab-examples" class="tab-btn w-full px-2 py-1.5 text-[13px] font-medium rounded-md transition-all text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-zinc-200/50 dark:hover:bg-white/5">Examples</button>
+                        <button onclick="switchContext('examples')" id="tab-examples" class="tab-btn w-full px-2 py-1.5 text-[13px] font-medium rounded-md transition-all text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white">Examples</button>
                     </li>
                     <li class="flex-1">
-                        <button onclick="switchContext('contribute')" id="tab-contribute" class="tab-btn w-full px-2 py-1.5 text-[13px] font-medium rounded-md transition-all text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-zinc-200/50 dark:hover:bg-white/5">Contribute</button>
+                        <button onclick="switchContext('contribute')" id="tab-contribute" class="tab-btn w-full px-2 py-1.5 text-[13px] font-medium rounded-md transition-all text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white">Contribute</button>
                     </li>
                 </ul>
             </div>
@@ -183,12 +203,12 @@
                             e2eeftp is a powerful, lightweight, and modern Python library for end-to-end encrypted file transfers. Designed for developers who need to integrate military-grade secure file sharing with minimal boilerplate.
                         </p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
-                            <div class="p-6 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111] shadow-sm hover:border-zinc-300 dark:hover:border-white/20 transition-colors">
+                            <div class="p-6 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111] shadow-sm">
                                 <div class="w-10 h-10 bg-zinc-100 dark:bg-white/10 rounded-lg flex items-center justify-center text-black dark:text-white mb-4"><i data-lucide="lock" class="w-5 h-5"></i></div>
                                 <h3 class="text-lg font-semibold tracking-tight text-black dark:text-white mb-2">Zero-Knowledge</h3>
                                 <p class="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">Files are encrypted before they ever leave your machine. The server never sees your raw data, ensuring absolute privacy.</p>
                             </div>
-                            <div class="p-6 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111] shadow-sm hover:border-zinc-300 dark:hover:border-white/20 transition-colors">
+                            <div class="p-6 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111] shadow-sm">
                                 <div class="w-10 h-10 bg-zinc-100 dark:bg-white/10 rounded-lg flex items-center justify-center text-black dark:text-white mb-4"><i data-lucide="file-up" class="w-5 h-5"></i></div>
                                 <h3 class="text-lg font-semibold tracking-tight text-black dark:text-white mb-2">Intuitive API</h3>
                                 <p class="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">A clean, pythonic interface that abstracts away the complex cryptography, letting you focus on building your app.</p>
@@ -341,6 +361,7 @@ print("File encrypted and transferred successfully!")</code></pre>
         let isDarkMode = true;
         let isMenuOpen = false;
         let isSearchOpen = false;
+        let isVersionMenuOpen = false;
         let currentPage = 'introduction';
 
         // Page order for pagination
@@ -405,14 +426,60 @@ print("File encrypted and transferred successfully!")</code></pre>
             }
         }
 
-        // Keyboard shortcuts
+        // Version Dropdown Toggle
+        function toggleVersionMenu(e) {
+            e.stopPropagation();
+            isVersionMenuOpen = !isVersionMenuOpen;
+            const menu = document.getElementById('versionDropdown');
+            const chevron = document.getElementById('versionChevron');
+            
+            if (isVersionMenuOpen) {
+                menu.classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
+                menu.classList.add('opacity-100', 'pointer-events-auto', 'scale-100');
+                chevron.classList.add('rotate-180');
+            } else {
+                menu.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
+                menu.classList.remove('opacity-100', 'pointer-events-auto', 'scale-100');
+                chevron.classList.remove('rotate-180');
+            }
+        }
+
+        // Handle Version Selection
+        function selectVersion(version, element) {
+            // Update button text
+            document.getElementById('currentVersion').innerHTML = version;
+            
+            // Handle checkmarks
+            document.querySelectorAll('.version-check').forEach(el => el.classList.add('hidden'));
+            element.querySelector('.version-check').classList.remove('hidden');
+            
+            // Handle active styling
+            document.querySelectorAll('.version-option').forEach(el => {
+                el.classList.remove('text-black', 'dark:text-white', 'font-medium');
+                el.classList.add('text-zinc-600', 'dark:text-zinc-400');
+            });
+            element.classList.remove('text-zinc-600', 'dark:text-zinc-400');
+            element.classList.add('text-black', 'dark:text-white', 'font-medium');
+
+            // Close menu safely
+            toggleVersionMenu({ stopPropagation: () => {} });
+        }
+
+        // Keyboard shortcuts and click-outside listeners
         window.addEventListener('keydown', (e) => {
             if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
                 e.preventDefault();
                 toggleSearch();
             }
-            if (e.key === 'Escape' && isSearchOpen) {
-                toggleSearch();
+            if (e.key === 'Escape') {
+                if (isSearchOpen) toggleSearch();
+                if (isVersionMenuOpen) toggleVersionMenu({ stopPropagation: () => {} });
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (isVersionMenuOpen && !document.getElementById('versionDropdown').contains(e.target)) {
+                toggleVersionMenu({ stopPropagation: () => {} });
             }
         });
 
@@ -425,7 +492,7 @@ print("File encrypted and transferred successfully!")</code></pre>
                 if (tab === context) {
                     el.className = "tab-btn w-full px-2 py-1.5 text-[13px] font-medium rounded-md transition-all bg-white dark:bg-[#222] text-black dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10";
                 } else {
-                    el.className = "tab-btn w-full px-2 py-1.5 text-[13px] font-medium rounded-md transition-all text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-zinc-200/50 dark:hover:bg-white/5";
+                    el.className = "tab-btn w-full px-2 py-1.5 text-[13px] font-medium rounded-md transition-all text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white";
                 }
             });
 
